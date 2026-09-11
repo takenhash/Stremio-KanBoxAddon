@@ -23,6 +23,54 @@ const ZIP_SUBTYPE_MAP = {
     'stremio-mako': { subtype: 'm', type: 'series' }
 };
 
+// Stable artwork fallbacks for records whose scraper metadata has no poster.
+// These are public, non-secret channel assets; stream resolution is unchanged.
+const ARTWORK_BASE_URL = 'https://raw.githubusercontent.com/takenhash/Stremio-KanBoxAddon/main/assets';
+const ARTWORK_BY_SUBTYPE = {
+    d: 'kan.jpg',
+    a: 'kan.jpg',
+    k: 'kan.jpg',
+    '`n': 'kan.jpg',
+    p: 'kan.jpg',
+    8: 'kan.jpg',
+    h: 'kan.jpg',
+    m: 'keshet.jpg',
+    r: '13.jpg',
+    tv: 'kan.jpg'
+};
+
+function validArtworkUrl(value) {
+    if (typeof value !== 'string') return '';
+    const url = value.trim();
+    return /^https?:\/\//i.test(url) ? url : '';
+}
+
+function fallbackArtworkFile(record) {
+    const name = String(record?.name || '').toLowerCase();
+    const subtype = record?.subtype;
+    if (record?.type === 'tv' || subtype === 'tv') {
+        if (/24|music|מוזיקה/.test(name)) return 'channel_24_square.jpg';
+        if (/12|mako|מאקו|קשת|keshet/.test(name)) return 'keshet.jpg';
+        if (/13|reshet|רשת/.test(name)) return '13.jpg';
+    }
+    return ARTWORK_BY_SUBTYPE[subtype] || 'kan.jpg';
+}
+
+function resolveArtwork(record) {
+    const meta = record?.meta || {};
+    const fallback = ARTWORK_BASE_URL + '/' + fallbackArtworkFile(record);
+    const poster = validArtworkUrl(record?.poster)
+        || validArtworkUrl(meta.poster)
+        || validArtworkUrl(meta.image)
+        || validArtworkUrl(record?.image)
+        || fallback;
+    const background = validArtworkUrl(record?.background)
+        || validArtworkUrl(meta.background)
+        || poster;
+    return { poster, background };
+}
+
+
 require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 
 var logger = log4js.getLogger("addon");
@@ -40,8 +88,8 @@ const dataReady = getJSONFile().catch(error => {
 // Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/manifest.md
 const manifest = {
 	"id": "community.StremioIsraeliTV",
-	"version": "1.0.0",
-    "logo": "https://raw.githubusercontent.com/tomartsh/Stremio-KanBoxAddon/main/assets/IdanPlus.jpg",
+	"version": "1.0.1",
+    "logo": "https://raw.githubusercontent.com/takenhash/Stremio-KanBoxAddon/main/assets/IdanPlus.jpg",
 		"catalogs": [
 		{
 			type: "tv",
@@ -1099,13 +1147,14 @@ async function loadDataFromDatabase() {
                 // Count subtypes for debugging
                 subtypeCounts[series.subtype] = (subtypeCounts[series.subtype] || 0) + 1;
 
+                const artwork = resolveArtwork(series);
                 listSeries.addItemByDetails(
                     series.id,
                     series.name,
-                    series.poster,
+                    artwork.poster,
                     series.description,
                     series.link,
-                    series.background,
+                    artwork.background,
                     series.genres,
                     series.meta,
                     series.type,
@@ -1202,7 +1251,8 @@ async function getJSONFile(){
                         }
                     }
 
-                    listSeries.addItemByDetails(value.id, value.name, value.poster, value.meta.description, value.link, value.background, value.meta.genres, value.meta, value.type, value.subtype, null);
+                    const artwork = resolveArtwork(value);
+                    listSeries.addItemByDetails(value.id, value.name, artwork.poster, value.meta.description, value.link, artwork.background, value.meta.genres, value.meta, value.type, value.subtype, null);
                     logger.info(`getJSONFile => Writing series. Id: ${value.id} Subtype: ${value.subtype} link: ${value.link} name: ${value.name}`);
                 }
             } else {
