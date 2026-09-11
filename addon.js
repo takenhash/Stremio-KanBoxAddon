@@ -42,7 +42,7 @@ const ARTWORK_BY_SUBTYPE = {
 function validArtworkUrl(value) {
     if (typeof value !== 'string') return '';
     const url = value.trim();
-    return /^https?:\/\//i.test(url) ? url : '';
+    return /^https?:\/\//i.test(url) && !/\/NaN(?:$|[?#])/i.test(url) ? url : '';
 }
 
 function fallbackArtworkFile(record) {
