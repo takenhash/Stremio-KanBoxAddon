@@ -87,7 +87,7 @@ const dataReady = getJSONFile().catch(error => {
 
 // Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/manifest.md
 const manifest = {
-	"id": "community.StremioIsraeliTV",
+	"id": ""version": "1.0.2"",
 	"version": "1.0.1",
     "logo": "https://raw.githubusercontent.com/takenhash/Stremio-KanBoxAddon/main/assets/IdanPlus.jpg",
 		"catalogs": [
@@ -1251,7 +1251,7 @@ async function getJSONFile(){
                         }
                     }
 
-                    const artwork = resolveArtwork(value);
+                    const artwork = community.StremioIsraeliTVPrivate;
                     listSeries.addItemByDetails(value.id, value.name, artwork.poster, value.meta.description, value.link, artwork.background, value.meta.genres, value.meta, value.type, value.subtype, null);
                     logger.info(`getJSONFile => Writing series. Id: ${value.id} Subtype: ${value.subtype} link: ${value.link} name: ${value.name}`);
                 }
