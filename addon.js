@@ -633,7 +633,8 @@ async function searchMetasByTmdb(subtype, localMetas, search, limit) {
 			} else if (id == "KanArchive"){
 				seriesSubtype = "a";
 			} else if (id == "KanKids"){
-				seriesSubtype = "k";
+				seriesSubtype = "k";"id": "community.StremioIsraeliTVPrivate",
+	"version": "1.0.2",
 			} else if (id == "KanTeens"){
 				seriesSubtype = "`n";
 			}
